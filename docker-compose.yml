@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: Agrim123@
+      MYSQL_DATABASE: notesdb
+      MYSQL_USER: notesuser
+      MYSQL_PASSWORD: notespwd
+    ports:
+      - "3307:3306"  # Host port changed to 3307
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      timeout: 10s
+  go-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: Agrim123@
+      DB_NAME: notesdb
+    depends_on:
+      mysql-db:
+        condition: service_healthy  # Ensure MySQL is healthy before starting
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
